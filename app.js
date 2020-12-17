@@ -1,21 +1,21 @@
-const fs = require('fs');
 const express = require('express');
 const app = express();
+const fs = require('fs');
 const getFilesizeInBytes = require('./helpers/getFileSize');
+const responseHandler = require('./helpers/responseHandler');
 
 let fileDescriptor;
+let lineSize = 256;
+let size = 0;
+let currentIndex = 0;
+let callCount = 0;
+let fileSize = getFilesizeInBytes('example.txt');
 
 fs.open('example.txt', 'r', (error, fd) => {
     if (error) console.log(error);
     console.log(fd);
     fileDescriptor = fd;
 })
-
-let lineSize = 256;
-let size = 0;
-let currentIndex = 0;
-let callCount = 0;
-let fileSize = getFilesizeInBytes('example.txt');
 
 app.get('/', async (req, res) => {
     const { lines, index } = req.query;
@@ -26,12 +26,7 @@ app.get('/', async (req, res) => {
     }
 
     if (size > fileSize) {
-        return res.json({
-            success: false,
-            message: 'Size limit exceeded',
-            size: size,
-            data: null
-        })
+        return res.json(responseHandler(false, 'Size limit exceeded', size, null));
     }
 
     let buffer = new Buffer.alloc(size);
@@ -39,12 +34,7 @@ app.get('/', async (req, res) => {
     if (index === 'forward' && callCount !== 0) {
         currentIndex += size;
         if (currentIndex > fileSize) {
-            return res.json({
-                success: false,
-                message: 'Size limit exceeded. Go backwards.',
-                size: null,
-                data: null
-            });
+            return res.json(responseHandler(false, 'Size limit exceeded. Go backwards.', null, null));
         }
     }
     if (index === 'backward') {
@@ -55,23 +45,18 @@ app.get('/', async (req, res) => {
     }
 
     const data = await new Promise((resolve, reject) => {
-        fs.read(fileDescriptor, buffer, 0, buffer.length, currentIndex, function (err, bytes) {
+        fs.read(fileDescriptor, buffer, 0, buffer.length, currentIndex, (err, bytes) => {
             if (err) reject(err);
             if (bytes > 0) {
                 resolve(buffer.slice(0, bytes).toString());
             }
-            console.log(bytes + " bytes read");
+            console.log(bytes + ' bytes read');
         });
     });
 
     callCount += 1;
-    console.log("Call Number: ", callCount)
-    return res.json({
-        success: true,
-        message: null,
-        size,
-        data
-    });
+    console.log('Call Number: ', callCount);
+    return res.json(responseHandler(true, null, size, data));
 });
 
 const PORT = process.env.PORT || 3000;
