@@ -1,0 +1,22 @@
+{
+  "name": "interview-relatas",
+  "version": "1.0.0",
+  "description": "interview task for relatas (logger)",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Mayank0255/Interview-Relatas.git"
+  },
+  "author": "Mayank Aggarwal",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Mayank0255/Interview-Relatas/issues"
+  },
+  "homepage": "https://github.com/Mayank0255/Interview-Relatas#readme",
+  "dependencies": {
+    "express": "4.17.1"
+  }
+}
